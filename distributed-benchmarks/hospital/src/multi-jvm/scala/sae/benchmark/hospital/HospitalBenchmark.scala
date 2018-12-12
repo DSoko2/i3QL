@@ -119,7 +119,7 @@ trait HospitalBenchmark extends Benchmark with HospitalConfig {
 			})
 		}
 
-		override protected def sleepUntilCold(eventNumber: Int = 0): Unit =
+		override protected def sleepUntilCold(expectedCount: Int, entryMode: Boolean): Unit =
 			super.sleepUntilCold(iterations / personSelectionInterval)
 
 	}

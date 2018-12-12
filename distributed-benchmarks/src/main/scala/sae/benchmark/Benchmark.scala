@@ -201,27 +201,30 @@ trait Benchmark extends MultiNodeSpec with BenchmarkConfig {
 		  * was reached. If `expectedEvents` is defined as 0 or negative, the relation is assumed to be cold, if the
 		  * eventCound didn't change over the last interval.
 		  *
-		  * @param expectedEvents
+		  * @param expectedCount
+		  * @param entryMode If set to true, the logic is applied against the entry count and not the event count
 		  */
-		protected def sleepUntilCold(expectedEvents: Int = 0) {
-			var lastEventCount = 0L
-			var lastEventCountChange = System.currentTimeMillis()
+		protected def sleepUntilCold(expectedCount: Int = 0, entryMode: Boolean = false) {
+			def count = if (entryMode) countEvaluator.entryCount else countEvaluator.eventCount
+
+			var lastCount = 0L
+			var lastCountChange = System.currentTimeMillis()
 			do {
-				if (lastEventCount != countEvaluator.eventCount) {
-					lastEventCount = countEvaluator.eventCount
-					lastEventCountChange = System.currentTimeMillis()
+				if (lastCount != count) {
+					lastCount = count
+					lastCountChange = System.currentTimeMillis()
 				}
-				else if (lastEventCountChange + waitForBeingColdTimeoutMs < System.currentTimeMillis())
-					throw new TimeoutException(s"Receiving relation becoming cold timeout exceeded (expected events: $expectedEvents, seen: ${countEvaluator.eventCount})")
-				log.info(s"Waiting for receiving relation to become cold... ($lastEventCount events of $expectedEvents)")
+				else if (lastCountChange + waitForBeingColdTimeoutMs < System.currentTimeMillis())
+					throw new TimeoutException(s"Receiving relation becoming cold timeout exceeded (expected: $expectedCount, seen: $count)")
+				log.info(s"Waiting for receiving relation to become cold... ($lastCount of $expectedCount)")
 
 				Thread.sleep(waitForBeingColdIntervalMs)
 
-				if (expectedEvents > 0 && expectedEvents < countEvaluator.eventCount)
-					throw new IllegalArgumentException(s"More events measured in receiving relation than expected (expected: $expectedEvents, seen: ${countEvaluator.eventCount})")
-			} while (expectedEvents > 0 && expectedEvents > countEvaluator.eventCount ||
-				expectedEvents <= 0 && lastEventCount != countEvaluator.eventCount)
-			log.info(s"Receiving relation is cold (${countEvaluator.eventCount} events of $expectedEvents)")
+				if (expectedCount > 0 && expectedCount < count)
+					throw new IllegalArgumentException(s"More events measured in receiving relation than expected (expected: $expectedCount, seen: $count)")
+			} while (expectedCount > 0 && expectedCount > count ||
+				expectedCount <= 0 && lastCount != count)
+			log.info(s"Receiving relation is cold ($count of $expectedCount)")
 		}
 
 		override protected def compile(): Unit = {

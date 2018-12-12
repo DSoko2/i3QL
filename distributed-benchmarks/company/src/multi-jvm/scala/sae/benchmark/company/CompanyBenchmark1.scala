@@ -113,7 +113,7 @@ class CompanyBenchmark1 extends MultiNodeSpec(CompanyMultiNodeConfig)
 			r
 		}
 
-		override protected def sleepUntilCold(eventNumber: Int = 0): Unit =
+		override protected def sleepUntilCold(expectedCount: Int, entryMode: Boolean): Unit =
 			super.sleepUntilCold(2)
 	}
 

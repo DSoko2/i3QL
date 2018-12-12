@@ -175,9 +175,10 @@ class CompanyBenchmark5 extends MultiNodeSpec(CompanyMultiNodeConfig)
 			r
 		}
 
-		override protected def sleepUntilCold(expectedEvents: Int): Unit =
-		// iterations * 10 adds and iterations * 9 removes
-			super.sleepUntilCold(iterations * 19)
+		override protected def sleepUntilCold(expectedCount: Int, entryMode: Boolean): Unit =
+		// iterations * 10 adds and iterations * 9 removes = event count, but sometimes removes and adds are aggregated
+		// which leads to less events. Therefore => entryMode
+			super.sleepUntilCold(iterations, true)
 	}
 
 	"Hospital Benchmark" must {
